@@ -1,0 +1,5 @@
+#Chaque tache est modéliser par : sa période, sa deadline, sa charge et son nom
+t 10 10 2 f1
+t 100 100 13 f4
+t 20 20 3 f2
+t 50 50 10 f3
