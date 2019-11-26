@@ -26,6 +26,10 @@ class task(object):
 
 	def toStr(self):
 		print("Task {} has a period of {} and deadline of {} with charge of {}".format(self.name, self.periode, self.deadline, self.charge))
+	
+	def printDeadline(self):
+		if self.missDeadline:
+			print("Task {} miss its deadline".format(self.name))
 
 ############### Class Microcycle ###############
 
@@ -104,16 +108,28 @@ def main():
 		while j < nbMicrocycle:
 			if hyperperiod[j].resTime - i.charge < 0: #Cas ou toute la charge ne rentre pas, elle est preemptée
 				k = j + 1
-				hyperperiod[j].tasks.append(task(i.periode,i.deadline,hyperperiod[j].resTime,i.name,True))
 				restCharge = i.charge - hyperperiod[j].resTime
+				if k == nbMicrocycle: #Task miss deadline
+					hyperperiod[j].tasks.append(task(i.periode,i.deadline,hyperperiod[j].resTime,i.name,True,True))		
+					hyperperiod[j].resTime = 0
+					break	
+				hyperperiod[j].tasks.append(task(i.periode,i.deadline,hyperperiod[j].resTime,i.name,True))
 				hyperperiod[j].resTime = 0
-				while hyperperiod[k].resTime != 0 and restCharge > 0:
+				while k < nbMicrocycle and hyperperiod[k].resTime != 0 and restCharge > 0:
 					if hyperperiod[k].resTime > restCharge: #Tout le reste de la charge rentre sans une nouvelle preemption
-						hyperperiod[k].tasks.append(task(i.periode,i.deadline,restCharge,i.name))
 						hyperperiod[k].resTime = hyperperiod[k].resTime - restCharge
+						if k >= j + it: #Task miss deadline
+							hyperperiod[k].tasks.append(task(i.periode,i.deadline,restCharge,i.name,True,True))
+							restCharge = 0
+							break
+						hyperperiod[k].tasks.append(task(i.periode,i.deadline,restCharge,i.name))
 						restCharge = 0
-					else: #La tache sera de nouveau preemptée au moins une fois avant de pouvoir se finir
+					else: #La tache sera de nouveau preemptée au moins une fois avant de pouvoir se finir					
 						restCharge = restCharge - hyperperiod[k].resTime
+						if k >= j + it: #Task miss deadline
+							hyperperiod[k].tasks.append(task(i.periode,i.deadline,hyperperiod[k].resTime,i.name,True,True))
+							hyperperiod[k].resTime = 0
+							break
 						hyperperiod[k].tasks.append(task(i.periode,i.deadline,hyperperiod[k].resTime,i.name,True))
 						hyperperiod[k].resTime = 0
 					k = k + 1
@@ -124,5 +140,8 @@ def main():
 			
 
 	printHyperperiod(hyperperiod)
+	for j in hyperperiod[:]:
+		for i in j.tasks[:]:
+			i.printDeadline()
 if __name__ == "__main__":
 	main()
